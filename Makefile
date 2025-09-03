@@ -75,7 +75,7 @@ modify-aggressive:
 	@echo "Modifying images with aggressive settings..."
 	@echo "Input: $(INPUT_PATH)"
 	@echo "Output: $(OUTPUT_PATH)"
-	poetry run python cli.py modify "$(INPUT_PATH)" "$(OUTPUT_PATH)" --pixel-frequency 200 --pixel-intensity 25 --crop-percentage 0.20 --color-enhancement 1.05 --verbose
+	poetry run python cli.py modify "$(INPUT_PATH)" "$(OUTPUT_PATH)" --pixel-frequency 200 --pixel-delta 25 --crop-percentage 0.20 --color-enhancement 1.05 --verbose
 
 # Test targets with default output folder
 test-modify:
@@ -90,7 +90,7 @@ test-aggressive:
 	@echo "Testing aggressive modification (output: $(OUTPUT_PATH))..."
 	@echo "Input: $(INPUT_PATH)"
 	@echo "Output: $(OUTPUT_PATH)"
-	poetry run python cli.py modify "$(INPUT_PATH)" "$(OUTPUT_PATH)" --pixel-frequency 200 --pixel-intensity 25 --crop-percentage 0.20 --color-enhancement 1.05 --verbose
+	poetry run python cli.py modify "$(INPUT_PATH)" "$(OUTPUT_PATH)" --pixel-frequency 200 --pixel-delta 25 --crop-percentage 0.20 --color-enhancement 1.05 --verbose
 	@echo ""
 	@echo "✅ Test complete! Photos saved to $(OUTPUT_PATH)"
 

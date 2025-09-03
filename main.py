@@ -41,7 +41,7 @@ def add_pixels(image, pixel_frequency=1000, pixel_slight_delta=10):
         # Modify color with specified intensity
         new_color = []
         for c in current_color:
-            new_color.append(max(0, min(255, c + random.randint(-pixel_slight_delta, pixel_slight_delta))))
+            new_color.append(max(0, min(255, c + random.randint(-int(pixel_slight_delta), int(pixel_slight_delta)))))
         new_color = tuple(new_color)
 
         pixels[x, y] = new_color
@@ -49,10 +49,10 @@ def add_pixels(image, pixel_frequency=1000, pixel_slight_delta=10):
     return modified_image
 
 
-def add_some_dots(image, corner='upper-right', pixel_slight_delta=10, obvious_mode=False):
+def add_some_dots(image, pixel_slight_delta=10, aggressive_mode=False):
     """
     Add several small, subtle round dots in random locations to mark modifications.
-    obvious_mode: If True, use obvious colors for all dots. If False, use natural blending.
+    aggressive_mode: If True, use obvious colors for all dots. If False, use natural blending.
     """
     import random
     import math
@@ -68,9 +68,17 @@ def add_some_dots(image, corner='upper-right', pixel_slight_delta=10, obvious_mo
     # Get image dimensions
     width, height = image.size
 
+    # Ensure width and height are integers
+    width = int(width)
+    height = int(height)
+
+    # Debug: ensure width and height are integers
+    width = int(width)
+    height = int(height)
+
     # Create dots of different sizes
-    dot_size = 3  # Regular dot size (current size you like)
-    small_dot_size = 1  # Half the size for the middle dot
+    dot_size = 3  # This is used during aggressive mode to see if dot adding actually works.
+    small_dot_size = 1  # Size for tiny dots
 
     # Add dot in middle right side (random position)
     right_x = random.randint(width - 50, width - 20)  # 20-50 pixels from right edge
@@ -94,13 +102,13 @@ def add_some_dots(image, corner='upper-right', pixel_slight_delta=10, obvious_mo
 
     # Add 150 tiny dots in random locations for better detection avoidance
     tiny_dots = []
-    for _ in range(150):
+    for _ in range(800):
         tiny_x = random.randint(20, width - 20)  # Avoid edges
         tiny_y = random.randint(20, height - 20)  # Avoid edges
         tiny_dots.append((tiny_x, tiny_y))
 
     # Function to add a round dot with fixed gray/white color (for strategic dots)
-    def add_strategic_dot(center_x, center_y, dot_size):
+    def add_specific_location_dot(center_x, center_y, dot_size):
         for dx in range(-dot_size, dot_size + 1):
             for dy in range(-dot_size, dot_size + 1):
                 # Calculate distance from center
@@ -137,7 +145,7 @@ def add_some_dots(image, corner='upper-right', pixel_slight_delta=10, obvious_mo
                         # Apply natural variation using pixel_slight_delta (same logic as add_pixels)
                         new_color = []
                         for c in original_color:
-                            new_color.append(max(0, min(255, c + random.randint(-pixel_slight_delta, pixel_slight_delta))))
+                            new_color.append(max(0, min(255, c + random.randint(-int(pixel_slight_delta), int(pixel_slight_delta)))))
                         new_color = tuple(new_color)
 
                         pixels[dot_x, dot_y] = new_color
@@ -166,7 +174,7 @@ def add_some_dots(image, corner='upper-right', pixel_slight_delta=10, obvious_mo
     strategic_dots = [(right_x, right_y), (left_x, left_y), (top_middle_x, top_middle_y), (bottom_middle_x, bottom_middle_y)]
 
     # Add dots based on mode
-    if obvious_mode:
+    if aggressive_mode:
         # Aggressive mode: Use obvious colors for ALL dots
         for x, y in strategic_dots:
             add_obvious_dot(x, y, dot_size)
@@ -175,10 +183,10 @@ def add_some_dots(image, corner='upper-right', pixel_slight_delta=10, obvious_mo
             add_obvious_dot(tiny_x, tiny_y, small_dot_size)
     else:
         # Regular mode: Strategic dots are gray, others are natural
-        add_strategic_dot(right_x, right_y, dot_size)        # Middle right
-        add_strategic_dot(left_x, left_y, dot_size)          # Top left quadrant
-        add_strategic_dot(top_middle_x, top_middle_y, dot_size)    # Top middle
-        add_strategic_dot(bottom_middle_x, bottom_middle_y, dot_size)  # Bottom middle
+        add_specific_location_dot(right_x, right_y, dot_size)        # Middle right
+        add_specific_location_dot(left_x, left_y, dot_size)          # Top left quadrant
+        add_specific_location_dot(top_middle_x, top_middle_y, dot_size)    # Top middle
+        add_specific_location_dot(bottom_middle_x, bottom_middle_y, dot_size)  # Bottom middle
         add_natural_dot(center_x, center_y, small_dot_size)
         for tiny_x, tiny_y in tiny_dots:
             add_natural_dot(tiny_x, tiny_y, small_dot_size)
@@ -349,7 +357,7 @@ def enhance_colors(image, enhancement_factor=1.1):
     return enhancer.enhance(enhancement_factor)
 
 
-def mask_single_image(image_path, color_enhancement=1.01, crop_percentage=0.01, pixel_frequency=1000, pixel_slight_delta=10, obvious_mode=False):
+def mask_single_image(image_path, color_enhancement=1.01, crop_percentage=0.01, pixel_frequency=1000, pixel_slight_delta=10, aggressive_mode=False):
     """
     Process a single image through all modification steps.
     Returns the modified image object.
@@ -360,7 +368,7 @@ def mask_single_image(image_path, color_enhancement=1.01, crop_percentage=0.01, 
             # Apply modifications to make the image look like the original but with subtle changes.
             modified_img = add_pixels(img, pixel_frequency, pixel_slight_delta)
             modified_img = crop_image(modified_img, crop_percentage)
-            modified_img = add_some_dots(modified_img, 'upper-right', pixel_slight_delta, obvious_mode)  # Add several subtle dots after cropping
+            modified_img = add_some_dots(modified_img, pixel_slight_delta, aggressive_mode)  # Add several subtle dots after cropping
             modified_img = enhance_colors(modified_img, color_enhancement)
             modified_img = wipe_metadata_aggressive(modified_img)
             modified_img = add_fake_metadata(modified_img)
@@ -675,7 +683,7 @@ def compare_hashes(photo_mapping):
     return not any_identical
 
 
-def create_new_images(input_path, output_path, color_enhancement=1.01, crop_percentage=0.01, pixel_frequency=1000, pixel_intensity=10, obvious_mode=False):
+def create_new_images(input_path, output_path, color_enhancement=1.01, crop_percentage=0.01, pixel_frequency=1000, pixel_intensity=10, aggressive_mode=False):
     """
     Main function: Process all images, perform safety checks, then save to output.
     """
@@ -709,7 +717,7 @@ def create_new_images(input_path, output_path, color_enhancement=1.01, crop_perc
         print(f"{'='*60}")
 
         # Process the image and get modified version
-        modified_image = mask_single_image(image_file, color_enhancement, crop_percentage, pixel_frequency, pixel_intensity, obvious_mode)
+        modified_image = mask_single_image(image_file, color_enhancement, crop_percentage, pixel_frequency, pixel_intensity, aggressive_mode)
 
         if modified_image is None:
             print(f"  ✗ Failed to process: {image_file.name}")

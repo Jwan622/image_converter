@@ -19,11 +19,11 @@ def cli():
 @click.argument('input_path', type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.argument('output_path', type=click.Path())
 @click.option('--pixel-frequency', default=1000, help='How often to modify pixels (default: 1000)')
-@click.option('--pixel-intensity', default=10, help='Intensity of pixel modifications (default: 10)')
-@click.option('--crop-percentage', default=0.01, help='Percentage to crop (default: 0.01)')
-@click.option('--color-enhancement', default=1.01, help='Color enhancement factor (default: 1.01)')
+@click.option('--pixel-delta', default=10, help='Delta of pixel modifications (default: 10). We take the original pixel value and add a random number between -pixel_delta and pixel_delta.')
+@click.option('--crop-percentage', default=0.011, help='Percentage to crop (default: 0.011)')
+@click.option('--color-enhancement', default=1.011, help='Color enhancement factor (default: 1.011)')
 @click.option('--verbose', '-v', is_flag=True, help='Verbose output')
-def modify(input_path, output_path, pixel_frequency, pixel_intensity, crop_percentage, color_enhancement, verbose):
+def modify(input_path, output_path, pixel_frequency, pixel_delta, crop_percentage, color_enhancement, verbose):
     """
     Modify images with subtle changes to avoid photo hashing detection.
 
@@ -33,18 +33,18 @@ def modify(input_path, output_path, pixel_frequency, pixel_intensity, crop_perce
         click.echo(f"Input path: {input_path}")
         click.echo(f"Output path: {output_path}")
         click.echo(f"Pixel frequency: {pixel_frequency}")
-        click.echo(f"Pixel intensity: {pixel_intensity}")
+        click.echo(f"Pixel delta: {pixel_delta}")
         click.echo(f"Crop percentage: {crop_percentage}")
         click.echo(f"Color enhancement: {color_enhancement}")
 
-    # Detect if this is aggressive mode based on parameters
-    obvious_mode = (pixel_frequency <= 200 or crop_percentage >= 0.20 or color_enhancement >= 1.05)
+        # Detect if this is aggressive mode based on parameters
+    aggressive_mode = (pixel_frequency <= 200 or crop_percentage >= 0.20 or color_enhancement >= 1.05)
 
     if verbose:
-        click.echo(f"Mode: {'Aggressive (obvious dots)' if obvious_mode else 'Regular (natural dots)'}")
+        click.echo(f"Mode: {'Aggressive (obvious dots)' if aggressive_mode else 'Regular (natural dots)'}")
 
     # Process images with modifications
-    create_new_images(input_path, output_path, color_enhancement, crop_percentage, pixel_frequency, pixel_intensity, obvious_mode)
+    create_new_images(input_path, output_path, color_enhancement, crop_percentage, pixel_frequency, pixel_delta, aggressive_mode)
 
 
 @cli.command()
