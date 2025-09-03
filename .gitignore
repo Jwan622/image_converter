@@ -1,0 +1,16 @@
+.cursorrules
+.DS_Store
+.pytest_cache
+.venv
+.env
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+__pycache__/
+
+hinge_photos_modified/
+hinge_photos_modified_aggressive/
+modified_photos/
